@@ -217,7 +217,7 @@ void add(char name[], char number[], char email[], char group[]) {
 // TODO Person 객체뿐만 아니라, 각각 원소의 객체도 메모리 해제 필요...!
 void release_person(Person *p) {
     free(p->name);
-    // TODO strdup() 함수 자체도 malloc() 함수로 메모리를 할당 함.
+    // TODO strdup() 함수 자체도 malloc() 함수로 메모리를 할당 함. 
     // TODO 결국 strdup()로 생성된 "구조체 멤버 객체"들도 free 해줘야 메모리 누수를 막을 수 있음...!
     if (p->number != NULL) free(p->number);
     if (p->email != NULL) free(p->email);
