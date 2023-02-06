@@ -33,5 +33,8 @@ struct artist {
 void initialize();
 void add_song(char *artist, char *title, char *filepath);
 void status();  // TODO 항상 함수 헤더파일에 포함하는 것 까먹지 말기!
+void load(FILE *fp);
+void search_songs(char *artist);
+void search_song(char *artist, char *title);
 
 #endif  // LIBRARY_H

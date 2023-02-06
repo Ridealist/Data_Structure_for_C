@@ -7,14 +7,35 @@
 #define BUFFER_LENGTH 200
 
 void handle_add();
+void handle_load();
+void handle_search();
 void process_command();
 
 
 int main(void)
 {
     initialize();
+    handle_load();
     process_command();
 
+}
+
+void handle_load()
+{
+    char buffer[BUFFER_LENGTH];
+
+    printf("Data file name? ");
+    if (read_line(stdin, buffer, BUFFER_LENGTH) <= 0)     // get a line
+        return;
+    
+    FILE *fp = fopen(buffer, "r");
+    if (fp == NULL) {
+        printf("No such file exists.\n");
+        return;
+    }
+
+    load(fp);
+    fclose(fp);
 }
 
 
@@ -33,14 +54,11 @@ void process_command()
         if (strcmp(command, "add") == 0)
             handle_add();
         
-        // else if (strcmp(command, "search") == 0)
-        //     handle_search();
+        else if (strcmp(command, "search") == 0)
+            handle_search();
 
         // else if (strcmp(command, "remove") == 0)
         //     handle_remove();
-
-        else if (strcmp(command, "status") == 0)
-            status();
 
         // else if (strcmp(command, "play") == 0)
         //     handle_play();
@@ -48,9 +66,11 @@ void process_command()
         // else if (strcmp(command, "save") == 0)
         //     handle_save();
 
+        else if (strcmp(command, "status") == 0)
+            status();
+
         else if (strcmp(command, "exit") == 0)
             break;
-
     }
 }
 
@@ -75,4 +95,22 @@ void handle_add() {
 
     /* add to the music library */
     add_song(artist, title, filepath);
+}
+
+void handle_search()
+{
+    char name[BUFFER_LENGTH];
+    char title[BUFFER_LENGTH];
+
+    printf("    Artist: ");
+    if (read_line(stdin, name, BUFFER_LENGTH) <= 0) {
+        printf("    Artist name required.\n");
+        return;
+    }
+    printf("    Title: ");
+    if (read_line(stdin, title, BUFFER_LENGTH) <= 0)
+        search_songs(name);
+    else
+        // TODO C 언어에서 매개변수가 다르면 이름이 같아도 다른 함수로 취급함
+        search_song(name, title);
 }

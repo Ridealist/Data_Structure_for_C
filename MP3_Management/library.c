@@ -1,7 +1,9 @@
 #include "library.h"
+#include "string_tools.h"
 
 
 #define NUM_CHARS 256   // 2^8 = 256 -> 1byte 가질 수 있는 서로 다른 값의 크기 (어차피 첫글자는 char 자료형 이기 때문에)
+#define BUFFER_LENGTH 200
 
 // TODO 배열은 다른 파일에서 공유 변수로 사용하지 않을 것이므로, 헤더 파일에 정의할 필요 없다.  공유 변수 최소화!
 Artist *artist_directory[NUM_CHARS];
@@ -17,6 +19,36 @@ void initialize()     // TODO C언어에선 배열을 선언하면, 배열의 �
     }
 }
 
+void load(FILE *fp)
+{
+    char buffer[BUFFER_LENGTH];
+    char *name, *title, *path;
+
+    while(read_line(fp, buffer, BUFFER_LENGTH) > 0) {
+        name = strtok(buffer, "#");
+        if (strcmp(name, " ") == 0)
+            name = NULL;
+        else
+            // TODO name은 buffer에 일부 저장된 데이터인데 while loop을 돌면서 덮어쓰어져 버림
+            // TODO strdup로 새로 생성해서 저장해주어야 함 
+            name = strdup(name);
+
+        title = strtok(NULL, "#");
+        if (strcmp(title, " ") == 0)
+            title = NULL;
+        else
+            title = strdup(title);
+   
+        path = strtok(NULL, "#");
+        if (strcmp(path, " ") == 0)
+            path = NULL;
+        else
+            path = strdup(path);
+
+        add_song(name, title, path);
+    }
+    printf("Data file loaded.\n");
+}
 
 Artist *find_artist(char *name)
 {
@@ -151,6 +183,7 @@ void print_song(Artist *ptr_artist, Song *ptr_song) {
 
 void print_artist(Artist *ptr_artist)
 {
+    printf("%s\n", ptr_artist->name);
     SNode *p = ptr_artist->head;
     while (p != NULL)
     {
@@ -163,13 +196,57 @@ void print_artist(Artist *ptr_artist)
 void status()
 {
     for (int i = 0; i < NUM_CHARS; i++) {
-        if (artist_directory[i] == NULL)
-            continue;
+        // if (artist_directory[i] == NULL)
+        //     continue;
         Artist *p = artist_directory[i];
         while (p != NULL)
         {
             print_artist(p);
             p = p->next;
-        }      
+        }
+        // p == NULL이면 while 문을 돌지 않고 바로 빠져나와 print_artist 함수 실행되지 않음
     }
+}
+
+SNode *find_snode(Artist *ptr_artist, char *title)
+{
+    SNode *p = ptr_artist->head;
+    while (p != NULL && strcmp(p->song->title, title) < 0) {
+        p = p->next;
+    }
+    if (p == NULL || strcmp(p->song->title, title) != 0) {
+        return NULL; 
+    }
+    return p;
+}
+
+void search_songs(char *artist)
+{
+    Artist *ptr_artist = find_artist(artist);
+    if (ptr_artist == NULL) {
+        printf("No such artist exists.\n");
+        return;
+    }
+
+    SNode *p = ptr_artist->head;
+    printf("Found:\n");
+    print_artist(ptr_artist);
+}
+
+void search_song(char *artist, char *title)
+{
+    Artist *ptr_artist = find_artist(artist);
+    if (ptr_artist == NULL) {
+        printf("No such artist exists.\n");
+        return;
+    }
+
+    SNode *p = find_snode(ptr_artist, title);
+    if (p == NULL) {
+        printf("No such song exists.\n");
+        return;
+    }
+    
+    printf("Found:\n");
+    print_song(ptr_artist, p->song);
 }
