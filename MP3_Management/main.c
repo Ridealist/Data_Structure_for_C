@@ -9,6 +9,7 @@
 void handle_add();
 void handle_load();
 void handle_search();
+void handle_play();
 void process_command();
 
 
@@ -60,8 +61,8 @@ void process_command()
         // else if (strcmp(command, "remove") == 0)
         //     handle_remove();
 
-        // else if (strcmp(command, "play") == 0)
-        //     handle_play();
+        else if (strcmp(command, "play") == 0)
+            handle_play();
 
         // else if (strcmp(command, "save") == 0)
         //     handle_save();
@@ -113,4 +114,15 @@ void handle_search()
     else
         // TODO C 언어에서 매개변수가 다르면 이름이 같아도 다른 함수로 취급함
         search_song(name, title);
+}
+
+void handle_play()
+{
+    char *id_str = strtok(NULL, " ");
+    if (id_str == NULL) {
+        printf("Song index required.\n");
+        return;
+    }
+    int index = atoi(id_str);
+    play(index);
 }

@@ -3,10 +3,13 @@
 
 
 #define NUM_CHARS 256   // 2^8 = 256 -> 1byte 가질 수 있는 서로 다른 값의 크기 (어차피 첫글자는 char 자료형 이기 때문에)
+#define SIZE_INDEX_TABLE 100
 #define BUFFER_LENGTH 200
 
 // TODO 배열은 다른 파일에서 공유 변수로 사용하지 않을 것이므로, 헤더 파일에 정의할 필요 없다.  공유 변수 최소화!
 Artist *artist_directory[NUM_CHARS];
+SNode *index_directory[SIZE_INDEX_TABLE]; 
+
 int song_index = 0;
 
 // 어떤 배열의 type은 배열 "1칸"에 저장되는 타입이 무엇이냐에 대한 답
@@ -15,6 +18,10 @@ int song_index = 0;
 void initialize()     // TODO C언어에선 배열을 선언하면, 배열의 초기값이 어떻게 설정되어 있는지 모름. 항상 초기화를 해주어야 함!
 {
     for (int i = 0; i < NUM_CHARS; i++) {
+        artist_directory[i] = NULL;
+    }
+    // TODO 새로 생성한 artist_directory도 NULL로 초기화
+    for (int i = 0; i < SIZE_INDEX_TABLE; i++) {
         artist_directory[i] = NULL;
     }
 }
@@ -158,6 +165,36 @@ void insert_node(Artist *ptr_artist, SNode *ptr_snode)
     }
 }
 
+void insert_index_directory(Song *ptr_song)
+{
+    SNode *ptr_snode = create_snode_instance(ptr_song);
+
+    int idx = ptr_song->index % SIZE_INDEX_TABLE;
+
+    // insert SNode into single linked-list at index_directory
+    SNode *p = index_directory[idx];
+    if (p == NULL) {
+        index_directory[idx] = ptr_snode;
+        return;
+    }
+    SNode *q = NULL;
+    while (p != NULL && strcmp(p->song->title, ptr_song->title) < 0) {
+        q = p;
+        p = p->next;
+    }
+    if (q == NULL) {
+        ptr_snode->next = p;
+        index_directory[idx] = ptr_snode;
+    }
+    else if (p == NULL && q != NULL) {
+        q->next = ptr_snode;
+    }
+    else {
+        ptr_snode->next = p;
+        q->next = ptr_snode;
+    }
+}
+
 
 void add_song(char *artist, char *title, char *filepath)
 {
@@ -174,6 +211,8 @@ void add_song(char *artist, char *title, char *filepath)
 
     // insert snode
     insert_node(ptr_artist, ptr_snode);
+    // inser snode to index_directory
+    insert_index_directory(ptr_song); 
 }
 
 
@@ -249,4 +288,25 @@ void search_song(char *artist, char *title)
     
     printf("Found:\n");
     print_song(ptr_artist, p->song);
+}
+
+SNode *find_song(int index){
+    SNode *p = index_directory[index % SIZE_INDEX_TABLE];
+    while (p != NULL) {
+        if (p->song->index == index)
+            break;
+        p = p->next;
+    }
+    return p;
+}
+
+
+void play(int index)
+{
+    SNode *p = find_song(index);
+    if (p == NULL) {
+        printf("No such song exists.\n");
+        return;   
+    }
+    printf("%s, %s is now playing.\n", p->song->artist->name, p->song->title);
 }

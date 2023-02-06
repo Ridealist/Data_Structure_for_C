@@ -36,5 +36,6 @@ void status();  // TODO 항상 함수 헤더파일에 포함하는 것 까먹지
 void load(FILE *fp);
 void search_songs(char *artist);
 void search_song(char *artist, char *title);
+void play(int index);
 
 #endif  // LIBRARY_H
